@@ -1,0 +1,5 @@
+{
+  "name": "AI Image Studio",
+  "description": "A powerful and intuitive application that leverages the Gemini API to generate stunning, high-quality images from simple text prompts. Customize your creations with various aspect ratios for the perfect visual.",
+  "requestFramePermissions": []
+}
