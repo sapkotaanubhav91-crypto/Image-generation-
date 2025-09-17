@@ -1,5 +1,5 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 import { AspectRatio } from '../types';
 
 if (!process.env.API_KEY) {
@@ -28,6 +28,43 @@ export const generateImage = async (prompt: string, aspectRatio: AspectRatio): P
         }
     } catch (error) {
         console.error("Error generating image with Gemini API:", error);
+        throw new Error("An error occurred while communicating with the Gemini API.");
+    }
+};
+
+export const editImage = async (prompt: string, imageBase64: string, mimeType: string): Promise<string> => {
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image-preview',
+            contents: {
+                parts: [
+                    {
+                        inlineData: {
+                            data: imageBase64,
+                            mimeType: mimeType,
+                        },
+                    },
+                    {
+                        text: prompt,
+                    },
+                ],
+            },
+            config: {
+                responseModalities: [Modality.IMAGE, Modality.TEXT],
+            },
+        });
+
+        const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
+
+        if (imagePart && imagePart.inlineData) {
+            const base64ImageBytes: string = imagePart.inlineData.data;
+            const responseMimeType = imagePart.inlineData.mimeType || 'image/png';
+            return `data:${responseMimeType};base64,${base64ImageBytes}`;
+        }
+        
+        throw new Error("No image was returned by the API.");
+    } catch (error) {
+        console.error("Error editing image with Gemini API:", error);
         throw new Error("An error occurred while communicating with the Gemini API.");
     }
 };
